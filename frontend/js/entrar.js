@@ -5,15 +5,15 @@ logar.addEventListener('click', () => {
     const email = document.getElementById('email').value
     const senha = document.getElementById('senha').value
 
-    const valoresUser = {
-        email: email,
-        senha: senha
-    }
 
-    fetch('http://localhost:3000/login')
+    fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {'Content-Type' : 'application/json'},
+        body: JSON.stringify({email, senha})
+    })
     .then(resposta => resposta.json())
-    .then(valoresUser => {
-        respostaLogin.innerHTML = `Usuário cadastrado com sucesso! <br> Você será redirecionado para a tela inicial!`
+    .then(pesquisa => {
+        respostaLogin.innerHTML = `Acesso autorizado!`
     })
     .catch((err) => {
         respostaLogin.innerHTML = `Erro no servidor!`

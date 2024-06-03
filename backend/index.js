@@ -12,36 +12,35 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(cors())
 
-app.get('/login', async(req,res)=>{
+app.post('/login', async (req, res) => {
     const logar = req.body
-    console.log(logar)
+    console.log(`> email = ${logar.email}`)
+    
+    const pesquisa = await Usuario.findOne({ where: { email: logar.email }, raw: true })
 
-    try{
-        const pesquisa = await Usuario.findOne({where: {email: logar.email}, raw:true})
-        console.log(pesquisa)
-        
-        if(pesquisa === null) {
-            console.log(`Usuário nao existe no banco de dados!`)
-            res.status(404).json({message: `Usuário inexistente!`})
-        } else if(pesquisa.email == logar.email) {
-            bcrypt.compare(logar.senha, pesquisa.senha, (err, result)=> {
-                if (err) {
-                    console.log(`Erro ao verificar a criptografia! ${err}`)
-                    res.status(500).json({ message: `Senha ou usuário incorretos, por favor digite novamente!`})
-                }else if(result) {
-                    console.log(`Senha correta!`)
-                    res.status(200).json({message: "Sucesso ao efetuar login!"})
-                }else {
-                    console.log(`"Senha incorreta!"`)
-                    res.status(404).json({message: `Senha ou usuário incorretos, por favor digite novamente!`})
-                }   
-            })
-        }
-    }catch(err) {
-        console.error(`Erro ao consultar o usuário no banco de dados!, ${err}`)
-        res.status(500).json({message: `Erro ao consultar o usuário no banco de dados!`})
+    if(pesquisa == null){
+        console.log(`> pesquisa = null`)
+        res.status(500).json({Message: "pesquisa = null"})
     }
-})    
+    else{
+        const senhabanco = pesquisa.senha
+        const senhauser = logar.senha
+
+        bcrypt.compare( senhauser , senhabanco, (err, result) => {
+            if (err) {
+                console.log(`X erro ao validar criptografia`)
+                res.status(500).json({Message: `Acesso negado.`})
+            }
+            else if(result){
+                res.status(200).json({Message:`Acesso autorizado, bem vindo ${pesquisa.nome}.`})
+            } 
+            else{
+                console.log(`X erro ao validar criptografia`)
+                res.status(500).json({Message: `Acesso negado.`})
+            }
+        })
+    }
+})
 
 app.post('/cadastrar', (req, res) => {
     const cadastrar = req.body
